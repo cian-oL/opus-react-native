@@ -29,12 +29,13 @@ const Home = () => {
           </Text>
         </View>
         <View className="items-center">
-          <TouchableOpacity
-            // onPress={handleSignIn}
-            className="w-4/5 rounded-lg bg-orange-400 my-2 py-4"
-          >
-            <Text className="text-2xl font-rubik-extrabold mx-auto">Login</Text>
-          </TouchableOpacity>
+          <Link href="/login" asChild>
+            <TouchableOpacity className="w-4/5 rounded-lg bg-orange-400 my-2 py-4">
+              <Text className="text-2xl font-rubik-extrabold mx-auto">
+                Login
+              </Text>
+            </TouchableOpacity>
+          </Link>
           <Link href="/sign-up" asChild>
             <TouchableOpacity className="w-4/5 rounded-lg bg-orange-400 my-2 py-4">
               <Text className="text-2xl font-rubik-extrabold mx-auto">
