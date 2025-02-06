@@ -1,4 +1,6 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { isClerkAPIResponseError, useSignIn } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   View,
@@ -7,13 +9,23 @@ import {
   Image,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 
 import images from "@/constants/images";
 
+enum SignInType {
+  Phone,
+  Email,
+  Google,
+  Apple,
+}
+
 const Login = () => {
   const [countryCode, setCountryCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const router = useRouter();
+  const { signIn } = useSignIn();
 
   const isSendButtonDisabled =
     countryCode === "" || countryCode[0] !== "+" || mobileNumber === "";
@@ -24,6 +36,44 @@ const Login = () => {
     }
 
     setCountryCode(codeEntry);
+  };
+
+  const onSignIn = async (type: SignInType) => {
+    if (type === SignInType.Phone) {
+      try {
+        const fullPhoneNumber = countryCode + mobileNumber;
+
+        const { supportedFirstFactors } = await signIn!.create({
+          identifier: fullPhoneNumber,
+        });
+
+        const firstPhoneFactor: any = supportedFirstFactors?.find(
+          (factor) => factor.strategy === "phone_code"
+        );
+
+        const { phoneNumberId } = firstPhoneFactor;
+
+        await signIn!.prepareFirstFactor({
+          strategy: "phone_code",
+          phoneNumberId,
+        });
+
+        router.push({
+          pathname: "/verify/[phone]",
+          params: {
+            phone: fullPhoneNumber,
+            isSignIn: "true",
+          },
+        });
+      } catch (err) {
+        console.error("error", JSON.stringify(err, null, 2));
+        if (isClerkAPIResponseError(err)) {
+          if (err.errors[0].code === "form_identifier_not_found") {
+            Alert.alert("Error", err.errors[0].message);
+          }
+        }
+      }
+    }
   };
 
   return (
@@ -38,7 +88,7 @@ const Login = () => {
           Welcome Back
         </Text>
         <Text className="font-rubik text-xl">
-          Enter your phone number to receive a confirmation code:
+          Enter your phone number associated with your account:
         </Text>
         <View className="flex-row gap-4">
           <TextInput
@@ -60,9 +110,9 @@ const Login = () => {
           />
         </View>
         <Text className="font-rubik text-xl">
-          Already have an account?{" "}
-          <Link href="/login" className="text-orange-600 underline">
-            Login here.
+          No account?{" "}
+          <Link href="/sign-up" className="text-orange-600 underline">
+            Sign up here.
           </Link>
         </Text>
       </View>
@@ -76,10 +126,39 @@ const Login = () => {
           Send Confirmation Code
         </Text>
       </TouchableOpacity>
-      <View className="flex-row items-center mt-4">
+      <View className="flex-row items-center my-4">
         <View className="flex-1 bg-orange-500 h-0.5 mx-2" />
         <Text className="font-rubik italic text-xl mx-2">or</Text>
         <View className="flex-1 bg-orange-500 h-0.5 mx-2" />
+      </View>
+      <View className="gap-6">
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="mail" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with email
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="logo-google" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with Gmail
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="logo-apple" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with Apple
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
