@@ -1,5 +1,5 @@
 import { Link, useRouter } from "expo-router";
-import { useSignIn } from "@clerk/clerk-expo";
+import { isClerkAPIResponseError, useSignIn } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
@@ -9,9 +9,17 @@ import {
   Image,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 
 import images from "@/constants/images";
+
+enum SignInType {
+  Phone,
+  Email,
+  Google,
+  Apple,
+}
 
 const Login = () => {
   const [countryCode, setCountryCode] = useState("");
@@ -30,17 +38,41 @@ const Login = () => {
     setCountryCode(codeEntry);
   };
 
-  const onSignIn = async () => {
-    const fullPhoneNumber = countryCode + mobileNumber;
+  const onSignIn = async (type: SignInType) => {
+    if (type === SignInType.Phone) {
+      try {
+        const fullPhoneNumber = countryCode + mobileNumber;
 
-    try {
-      await signIn!.create({ phoneNumber: fullPhoneNumber });
-      router.push({
-        pathname: "/(root)/(tabs)/verify/[phone]",
-        params: { phone: fullPhoneNumber },
-      });
-    } catch (err) {
-      console.error("Error sigining up", err);
+        const { supportedFirstFactors } = await signIn!.create({
+          identifier: fullPhoneNumber,
+        });
+
+        const firstPhoneFactor: any = supportedFirstFactors?.find(
+          (factor) => factor.strategy === "phone_code"
+        );
+
+        const { phoneNumberId } = firstPhoneFactor;
+
+        await signIn!.prepareFirstFactor({
+          strategy: "phone_code",
+          phoneNumberId,
+        });
+
+        router.push({
+          pathname: "/verify/[phone]",
+          params: {
+            phone: fullPhoneNumber,
+            isSignIn: "true",
+          },
+        });
+      } catch (err) {
+        console.error("error", JSON.stringify(err, null, 2));
+        if (isClerkAPIResponseError(err)) {
+          if (err.errors[0].code === "form_identifier_not_found") {
+            Alert.alert("Error", err.errors[0].message);
+          }
+        }
+      }
     }
   };
 
@@ -94,18 +126,40 @@ const Login = () => {
           Send Confirmation Code
         </Text>
       </TouchableOpacity>
-      <View className="flex-row items-center mt-4">
+      <View className="flex-row items-center my-4">
         <View className="flex-1 bg-orange-500 h-0.5 mx-2" />
         <Text className="font-rubik italic text-xl mx-2">or</Text>
         <View className="flex-1 bg-orange-500 h-0.5 mx-2" />
       </View>
-      <TouchableOpacity
-        onPress={() => console.log("Email selected")} // TODO: Add functionaility
-        className=""
-      >
-        <Ionicons name="mail" size={24} color={"#000"} />
-        <Text s>Continue with email </Text>
-      </TouchableOpacity>
+      <View className="gap-6">
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="mail" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with email
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="logo-google" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with Gmail
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => console.log("Email selected")} // TODO: Add functionaility
+          className="flex-row items-center gap-4 mx-auto"
+        >
+          <Ionicons name="logo-apple" size={28} color={"#000"} />
+          <Text className="font-rubik-medium text-2xl">
+            Continue with Apple
+          </Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 };

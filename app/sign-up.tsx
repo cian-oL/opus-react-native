@@ -36,7 +36,7 @@ const SignUp = () => {
     try {
       await signUp!.create({ phoneNumber: fullPhoneNumber });
       router.push({
-        pathname: "/(root)/(tabs)/verify/[phone]",
+        pathname: "/verify/[phone]",
         params: { phone: fullPhoneNumber },
       });
     } catch (err) {

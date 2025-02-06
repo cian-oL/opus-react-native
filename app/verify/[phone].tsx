@@ -3,7 +3,10 @@ import React from "react";
 import { useLocalSearchParams } from "expo-router";
 
 const Page = () => {
-  const { phone } = useLocalSearchParams<{ phone: string }>();
+  const { phone } = useLocalSearchParams<{
+    phone: string;
+    isSignIn?: string;
+  }>();
 
   return (
     <View>
