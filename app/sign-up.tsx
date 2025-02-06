@@ -1,4 +1,5 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { useSignUp } from "@clerk/clerk-expo";
 import { useState } from "react";
 import {
   View,
@@ -12,6 +13,9 @@ import {
 import images from "@/constants/images";
 
 const SignUp = () => {
+  const router = useRouter();
+  const { signUp } = useSignUp();
+
   const [countryCode, setCountryCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
 
@@ -24,6 +28,20 @@ const SignUp = () => {
     }
 
     setCountryCode(codeEntry);
+  };
+
+  const onSignUp = async () => {
+    const fullPhoneNumber = countryCode + mobileNumber;
+
+    try {
+      await signUp!.create({ phoneNumber: fullPhoneNumber });
+      router.push({
+        pathname: "/(root)/(tabs)/verify/[phone]",
+        params: { phone: fullPhoneNumber },
+      });
+    } catch (err) {
+      console.error("Error sigining up", err);
+    }
   };
 
   return (
@@ -67,6 +85,7 @@ const SignUp = () => {
         </Text>
       </View>
       <TouchableOpacity
+        onPress={onSignUp}
         disabled={isSendButtonDisabled}
         className={`w-4/5 rounded-lg bg-orange-400 mx-auto py-4 ${
           isSendButtonDisabled && "opacity-50"

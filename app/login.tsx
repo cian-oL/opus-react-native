@@ -1,4 +1,6 @@
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { useSignIn } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   View,
@@ -14,6 +16,8 @@ import images from "@/constants/images";
 const Login = () => {
   const [countryCode, setCountryCode] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const router = useRouter();
+  const { signIn } = useSignIn();
 
   const isSendButtonDisabled =
     countryCode === "" || countryCode[0] !== "+" || mobileNumber === "";
@@ -24,6 +28,20 @@ const Login = () => {
     }
 
     setCountryCode(codeEntry);
+  };
+
+  const onSignIn = async () => {
+    const fullPhoneNumber = countryCode + mobileNumber;
+
+    try {
+      await signIn!.create({ phoneNumber: fullPhoneNumber });
+      router.push({
+        pathname: "/(root)/(tabs)/verify/[phone]",
+        params: { phone: fullPhoneNumber },
+      });
+    } catch (err) {
+      console.error("Error sigining up", err);
+    }
   };
 
   return (
@@ -38,7 +56,7 @@ const Login = () => {
           Welcome Back
         </Text>
         <Text className="font-rubik text-xl">
-          Enter your phone number to receive a confirmation code:
+          Enter your phone number associated with your account:
         </Text>
         <View className="flex-row gap-4">
           <TextInput
@@ -60,9 +78,9 @@ const Login = () => {
           />
         </View>
         <Text className="font-rubik text-xl">
-          Already have an account?{" "}
-          <Link href="/login" className="text-orange-600 underline">
-            Login here.
+          No account?{" "}
+          <Link href="/sign-up" className="text-orange-600 underline">
+            Sign up here.
           </Link>
         </Text>
       </View>
@@ -81,6 +99,13 @@ const Login = () => {
         <Text className="font-rubik italic text-xl mx-2">or</Text>
         <View className="flex-1 bg-orange-500 h-0.5 mx-2" />
       </View>
+      <TouchableOpacity
+        onPress={() => console.log("Email selected")} // TODO: Add functionaility
+        className=""
+      >
+        <Ionicons name="mail" size={24} color={"#000"} />
+        <Text s>Continue with email </Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
