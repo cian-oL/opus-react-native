@@ -31,7 +31,7 @@ const SignUp = () => {
   };
 
   const onSignUp = async () => {
-    const fullPhoneNumber = countryCode + mobileNumber;
+    const fullPhoneNumber = `${countryCode}-${mobileNumber}`;
 
     try {
       await signUp!.create({ phoneNumber: fullPhoneNumber });
