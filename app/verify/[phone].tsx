@@ -1,7 +1,8 @@
-import { View, Text, Platform } from "react-native";
-import { useEffect, useState } from "react";
+import { View, Text, Platform, StyleSheet } from "react-native";
+import { Fragment, useEffect, useState } from "react";
 import { Link, useLocalSearchParams } from "expo-router";
 import { useSignIn, useSignUp } from "@clerk/clerk-expo";
+import { Colors } from "react-native/Libraries/NewAppScreen";
 import {
   CodeField,
   Cursor,
@@ -19,14 +20,12 @@ const Page = () => {
   }>();
   const { signIn } = useSignIn();
   const { signUp, setActive } = useSignUp();
-
   const [verificationCode, setVerificationCode] = useState("");
-  const [value, setValue] = useState("");
 
-  const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
+  const ref = useBlurOnFulfill({ verificationCode, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-    value,
-    setValue,
+    value: verificationCode,
+    setValue: setVerificationCode,
   });
 
   useEffect(() => {
@@ -60,8 +59,8 @@ const Page = () => {
       <CodeField
         ref={ref}
         {...props}
-        value={value}
-        onChangeText={setValue}
+        value={verificationCode}
+        onChangeText={setVerificationCode}
         cellCount={CELL_COUNT}
         keyboardType="numeric"
         textContentType="oneTimeCode"
@@ -70,14 +69,55 @@ const Page = () => {
           default: "one-time-code",
         })}
         testID="my-code-input"
+        rootStyle={styles.codeFieldRoot}
         renderCell={({ index, symbol, isFocused }) => (
-          <Text key={index} onLayout={getCellOnLayoutHandler(index)}>
-            {symbol || (isFocused ? <Cursor /> : null)}
-          </Text>
+          <Fragment key={index}>
+            <Text
+              key={index}
+              onLayout={getCellOnLayoutHandler(index)}
+              style={[styles.cellRoot, isFocused && styles.focusCell]}
+            >
+              {symbol || (isFocused ? <Cursor /> : null)}
+            </Text>
+            {index === 2 ? (
+              <View key={`separator-${index}`} style={styles.separator} />
+            ) : null}
+          </Fragment>
         )}
       />
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  codeFieldRoot: {
+    marginVertical: 20,
+    marginLeft: "auto",
+    marginRight: "auto",
+    gap: 12,
+  },
+  cellRoot: {
+    width: 45,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.lightGray,
+    borderRadius: 8,
+  },
+  cellText: {
+    color: "#000",
+    fontSize: 36,
+    textAlign: "center",
+  },
+  focusCell: {
+    paddingBottom: 8,
+  },
+  separator: {
+    height: 2,
+    width: 10,
+    backgroundColor: Colors.gray,
+    alignSelf: "center",
+  },
+});
 
 export default Page;
