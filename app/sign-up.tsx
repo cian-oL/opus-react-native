@@ -35,6 +35,8 @@ const SignUp = () => {
 
     try {
       await signUp!.create({ phoneNumber: fullPhoneNumber });
+      signUp!.preparePhoneNumberVerification();
+
       router.push({
         pathname: "/verify/[phone]",
         params: { phone: fullPhoneNumber },
@@ -51,7 +53,7 @@ const SignUp = () => {
         resizeMode="contain"
         className="w-full h-1/5 mt-10"
       />
-      <View className="m-4 gap-6">
+      <View className="m-4 gap-8">
         <Text className="text-orange-500 text-3xl font-rubik-extrabold uppercase">
           Get Started
         </Text>
@@ -62,7 +64,7 @@ const SignUp = () => {
           <TextInput
             placeholder="+44"
             placeholderTextColor="rgba(169, 169, 169, 1)"
-            keyboardType="numeric"
+            keyboardType="number-pad"
             maxLength={4}
             value={countryCode}
             onChangeText={handleCountryCode}
