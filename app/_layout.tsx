@@ -1,7 +1,7 @@
 import { SplashScreen, Stack, useRouter } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
+import { ClerkProvider, ClerkLoaded, useAuth } from "@clerk/clerk-expo";
 
 import "./global.css";
 import { tokenCache } from "@/cache";
@@ -32,6 +32,7 @@ const InitialLayout = () => {
     "Rubik-SemiBold": require("@/assets/fonts/Rubik-SemiBold.ttf"),
   });
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -43,6 +44,11 @@ const InitialLayout = () => {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  // temp console check for sign-in
+  useEffect(() => {
+    console.log("isSignedIn:", isSignedIn);
+  }, [isSignedIn]);
 
   if (!fontsLoaded) {
     return null;
