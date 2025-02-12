@@ -14,5 +14,36 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    ({ addComponents }) =>
+      addComponents({
+        ".code-field-root": {
+          marginTop: "20px",
+          marginBottom: "20px",
+          marginRight: "auto",
+          gap: "12px",
+        },
+        ".cell-root": {
+          width: "45px",
+          height: "60px",
+          marginTop: "auto",
+          marginBottom: "auto",
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#F7F7F7",
+          borderWidth: "2px",
+          borderRadius: "8px",
+        },
+        ".cell-text": {
+          fontSize: "36px",
+          textAlign: "center",
+        },
+        ".separator": {
+          height: "4px",
+          width: "10px",
+          backgroundColor: "black",
+          alignSelf: "center",
+        },
+      }),
+  ],
 };
